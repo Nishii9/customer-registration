@@ -3,63 +3,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// const registerUser = async (req, res) => {
-//     const { firstName, lastName, email, password, role } = req.body;
-
-//     try {
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         const user = new User({
-//             firstName,
-//             lastName,
-//             email,
-//             password: hashedPassword,
-//             role,
-//         });
-
-//         await user.save();
-
-//         // Send email verification (Simplified, adjust for your needs)
-//         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-//         const transporter = nodemailer.createTransport({
-//             service: 'gmail',
-//             auth: {
-//                 user: process.env.EMAIL,
-//                 pass: process.env.PASSWORD,
-//             },
-//         });
-
-//         const mailOptions = {
-//             from: process.env.EMAIL,
-//             to: email,
-//             subject: 'Email Verification',
-//             text: `Please verify your email by clicking the following link: ${process.env.BASE_URL}/verify-email?token=${token}`,
-//         };
-
-//         transporter.sendMail(mailOptions);
-
-//         res.status(201).json({ message: 'User registered, please verify your email' });
-//     } catch (err) {
-//         res.status(500).json({ message: err.message });
-//     }
-// };
-
 // Register user
 const registerUser = async (req, res) => {
     const { firstName, lastName, email, password, role } = req.body;
 
     try {
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
-
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create new user
         const user = new User({
             firstName,
             lastName,
@@ -70,11 +24,7 @@ const registerUser = async (req, res) => {
         });
 
         await user.save();
-
-        // Generate verification token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-        // Configure nodemailer transporter
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
@@ -82,8 +32,6 @@ const registerUser = async (req, res) => {
                 pass: process.env.PASSWORD,
             },
         });
-
-        // Send verification email
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
